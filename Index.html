@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kunlik hisobot</title>
+<style>
+:root{--primary:#1d4ed8;--firm:#1d4ed8;--bg:#ffffff;--card:#f8fafc;--border:#94a3b8;--text:#0f172a;--muted:#334155;--danger:#b91c1c;--success:#15803d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-size:16px;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding-bottom:92px}
+header{background:var(--primary);color:#fff;padding:10px 14px;font-size:18px;font-weight:800;text-align:center}
+.wrap{max-width:520px;margin:0 auto;padding:10px}
+.top{display:flex;gap:8px;margin-bottom:8px}
+.top > div{flex:1}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:0 0 4px}
+select,input[type="date"],input[type="text"],input[type="password"]{width:100%;font-size:15px;padding:9px 10px;border:2px solid var(--border);
+  border-radius:8px;background:var(--card);color:var(--text)}
+select:focus,input:focus{border-color:var(--primary);outline:none}
+.hint{font-size:14px;font-weight:800;color:var(--danger);margin:4px 2px 8px}
+.pair{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:7px 10px;border:2px solid var(--border);border-radius:10px;margin-bottom:6px;background:var(--card)}
+.pair .f{font-weight:800;font-size:16px;color:var(--firm);line-height:1.15}
+.pair .p{font-size:13px;color:var(--muted);line-height:1.1}
+.pair input{width:72px;height:40px;text-align:center;font-size:19px;font-weight:800;flex-shrink:0;
+  border:2px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text)}
+.pair input:disabled{opacity:.5}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:2px solid var(--border);padding:8px 14px}
+.btn{display:block;width:100%;max-width:520px;margin:0 auto;height:50px;border:none;border-radius:10px;
+  background:var(--primary);color:#fff;font-size:18px;font-weight:800;cursor:pointer}
+.btn:disabled{background:#94a3b8}
+.btn.secondary{background:#64748b}
+.st{text-align:center;font-size:14px;font-weight:800;margin-top:4px;min-height:18px}
+.st.ok{color:var(--success)}.st.err{color:var(--danger)}
+.ov{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;
+  font-size:17px;color:var(--muted);z-index:9;text-align:center;padding:20px}
+.cfc{width:100%;max-width:520px;margin:16px auto;background:var(--card);border:2px solid var(--border);
+  border-radius:14px;padding:16px;text-align:left}
+.warn{background:#fef3c7;color:#78350f;font-weight:800;font-size:14px;border-radius:8px;padding:8px 10px;margin:0 0 12px}
+.cfRow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:16px}
+.who{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid var(--border);font-size:14px}
+.who b{color:var(--firm)}
+.who a{color:var(--danger);font-weight:700;text-decoration:none;font-size:13px}
+.authCard{max-width:380px;margin:40px auto;background:var(--card);border:2px solid var(--border);border-radius:16px;padding:22px}
+.authCard h2{margin:0 0 16px;font-size:20px;text-align:center}
+.authCard input{margin-bottom:10px}
+.switchLink{text-align:center;font-size:14px;margin-top:10px;color:var(--muted)}
+.switchLink a{color:var(--primary);font-weight:700;cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+<header>📋 Kunlik hisobot</header>
+<div class="ov" id="ov" style="display:none">Yuklanmoqda...</div>
+
+<!-- ===== LOGIN / RO'YXATDAN O'TISH ===== -->
+<div id="authScreen" class="wrap">
+  <div class="authCard">
+    <h2 id="authTitle">Kirish</h2>
+    <label>Ismingiz</label>
+    <input type="text" id="authUser" placeholder="Masalan: Aziz Karimov">
+    <label>Parol</label>
+    <input type="password" id="authPass" placeholder="Parolingiz">
+    <div style="height:4px"></div>
+    <button class="btn" id="authSubmit" type="button">Kirish</button>
+    <div class="st" id="authSt"></div>
+    <p class="switchLink" id="switchText">Hali ro'yxatdan o'tmaganmisiz? <a id="switchLink">Ro'yxatdan o'tish</a></p>
+  </div>
+</div>
+
+<!-- ===== ASOSIY FORMA ===== -->
+<div id="mainScreen" style="display:none">
+  <div class="who">
+    <span>Kirgan: <b id="whoName"></b></span>
+    <a id="logoutBtn" href="#">Chiqish</a>
+  </div>
+  <div class="wrap">
+    <div class="top">
+      <div><label>Sana</label><input type="date" id="date"></div>
+      <div><label>Obyekt</label><select id="terr"><option value="">Obyekt...</option></select></div>
+    </div>
+    <p class="hint" id="hint">Avval obyektni tanlang.</p>
+    <div id="list"></div>
+  </div>
+
+  <div class="ov" id="cf" style="display:none;align-items:flex-start;overflow:auto">
+    <div class="cfc">
+      <p style="margin:0 0 10px;font-size:19px;font-weight:800">⚠️ Diqqat bilan tekshiring!</p>
+      <div class="warn">Bu hisobot bir marta yuboriladi. Son yoki firmada xato bo'lsa, HOZIR tuzating.</div>
+      <div id="cfBody"></div>
+      <button class="btn" id="cfYes" type="button" style="margin-top:16px">TO'G'RI, YUBORISH</button>
+      <button class="btn secondary" id="cfNo" type="button" style="margin-top:8px">ORQAGA, TUZATAMAN</button>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="btn" id="send" type="button">YUBORISH</button>
+    <div class="st" id="st"></div>
+  </div>
+</div>
+
+<script>
+// ====== SHU YERGA Apps Script'dan olingan /exec havolani joylang ======
+var API_URL = 'https://script.google.com/macros/s/AKfycbydb9ksbtcXXMx06KEd7Gzcwvsm6i4t_uCeWcl3iIHfyb6F5UiV4wGFKLkAESEbQoJ8/exec';
+
+var TOKEN_KEY = 'kh_token', NAME_KEY = 'kh_username';
+var firms = {}, pairs = [], loaded = 0;
+
+function api(action, payload, ok, fail){
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: action, payload: payload || {} })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(res){
+    if (res.ok) ok(res);
+    else (fail || function(m){ alert(m); })(res.message || "Noma'lum xatolik");
+  })
+  .catch(function(err){ (fail || function(m){ alert(m); })(String(err)); });
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+// ============ AUTH EKRANI ============
+var isRegisterMode = false;
+var authTitle = document.getElementById('authTitle');
+var switchLink = document.getElementById('switchLink');
+var switchText = document.getElementById('switchText');
+var authSubmit = document.getElementById('authSubmit');
+var authSt = document.getElementById('authSt');
+
+function setAuthMode(reg){
+  isRegisterMode = reg;
+  authTitle.textContent = reg ? "Ro'yxatdan o'tish" : 'Kirish';
+  authSubmit.textContent = reg ? "Ro'yxatdan o'tish" : 'Kirish';
+  switchText.innerHTML = reg
+    ? 'Akkauntingiz bormi? <a id="switchLink">Kirish</a>'
+    : "Hali ro'yxatdan o'tmaganmisiz? <a id=\"switchLink\">Ro'yxatdan o'tish</a>";
+  document.getElementById('switchLink').onclick = function(){ setAuthMode(!reg); };
+}
+switchLink.onclick = function(){ setAuthMode(true); };
+
+authSubmit.addEventListener('click', function(){
+  var username = document.getElementById('authUser').value.trim();
+  var password = document.getElementById('authPass').value;
+  authSt.className = 'st'; authSt.textContent = '';
+  if (!username) { authSt.className = 'st err'; authSt.textContent = 'Ismingizni yozing.'; return; }
+  if (!password) { authSt.className = 'st err'; authSt.textContent = 'Parolni yozing.'; return; }
+
+  authSubmit.disabled = true;
+  authSt.textContent = isRegisterMode ? "Ro'yxatdan o'tilmoqda..." : 'Kirilmoqda...';
+  api(isRegisterMode ? 'register' : 'login', { username: username, password: password }, function(res){
+    authSubmit.disabled = false;
+    localStorage.setItem(TOKEN_KEY, res.token);
+    localStorage.setItem(NAME_KEY, res.username);
+    showMain(res.username);
+  }, function(msg){
+    authSubmit.disabled = false;
+    authSt.className = 'st err'; authSt.textContent = msg;
+  });
+});
+
+document.getElementById('logoutBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(NAME_KEY);
+  document.getElementById('mainScreen').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'block';
+  document.getElementById('authUser').value = '';
+  document.getElementById('authPass').value = '';
+});
+
+// ============ ASOSIY FORMA ============
+var list = document.getElementById('list'), st = document.getElementById('st');
+var terr = document.getElementById('terr'), hint = document.getElementById('hint');
+var dateEl = document.getElementById('date');
+
+function showMain(username){
+  document.getElementById('whoName').textContent = username;
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('mainScreen').style.display = 'block';
+  loadFormData();
+}
+
+function loadFormData(){
+  var d = new Date();
+  dateEl.value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  loaded = 0;
+  document.getElementById('ov').style.display = 'flex';
+  document.getElementById('ov').textContent = 'Yuklanmoqda...';
+  function ready(){ if (++loaded >= 2) document.getElementById('ov').style.display = 'none'; }
+
+  api('getFirmsConfig', {}, function(res){ firms = res.data; build(); ready(); });
+  api('getTerritories', {}, function(res){
+    terr.innerHTML = '<option value="">Obyektni tanlang...</option>' +
+      res.data.map(function(x){ return '<option value="'+esc(x)+'">'+esc(x)+'</option>'; }).join('');
+    ready();
+  });
+}
+
+function build(){
+  pairs = [];
+  Object.keys(firms).forEach(function(f){ firms[f].forEach(function(p){ pairs.push({f:f,p:p}); }); });
+  list.innerHTML = pairs.map(function(pr, i){
+    return '<div class="pair" id="pair' + i + '">' +
+      '<div><div class="f">' + esc(pr.f) + '</div><div class="p">' + esc(pr.p) + '</div></div>' +
+      '<input type="number" inputmode="numeric" min="0" placeholder="0" disabled id="in' + i + '"></div>';
+  }).join('') || '<p class="hint">Firmalar ro\'yxati bo\'sh.</p>';
+  lock();
+}
+function lock(){
+  var ok = !!terr.value;
+  hint.style.display = ok ? 'none' : 'block';
+  pairs.forEach(function(pr, i){ var inp = document.getElementById('in' + i); if (inp) inp.disabled = !ok; });
+}
+terr.onchange = lock;
+
+document.getElementById('send').addEventListener('click', function(){
+  var date = dateEl.value;
+  st.className = 'st'; st.textContent = '';
+  if (!date) { st.className = 'st err'; st.textContent = 'Sanani tanlang.'; return; }
+  if (!terr.value) { st.className = 'st err'; st.textContent = 'Obyektni tanlang.'; window.scrollTo(0,0); return; }
+  var by = {};
+  pairs.forEach(function(pr, i){
+    var inp = document.getElementById('in' + i);
+    var n = Number(inp.value);
+    if (n > 0 && !inp.disabled) { by[pr.f] = by[pr.f] || {}; by[pr.f][pr.p] = n; }
+  });
+  var entries = Object.keys(by).map(function(f){ return {firm:f, positions:by[f]}; });
+  if (!entries.length) { st.className = 'st err'; st.textContent = 'Hech qanday son yozilmadi.'; return; }
+  showConfirm(date, terr.value, entries);
+});
+
+function showConfirm(date, tr, entries){
+  var total = 0;
+  var html = '<div class="cfRow"><span>Kim</span><b>' + esc(localStorage.getItem(NAME_KEY)) + '</b></div>' +
+    '<div class="cfRow"><span>Sana</span><b>' + esc(date.split('-').reverse().join('.')) + '</b></div>' +
+    '<div class="cfRow"><span>Obyekt</span><b>' + esc(tr) + '</b></div>';
+  entries.forEach(function(e){
+    Object.keys(e.positions).forEach(function(pos){
+      total += e.positions[pos];
+      html += '<div class="cfRow"><span><b>' + esc(e.firm) + '</b> — ' + esc(pos) + '</span><b>' + e.positions[pos] + '</b></div>';
+    });
+  });
+  html += '<div class="cfRow" style="border:none;font-size:18px;margin-top:6px"><span><b>Jami</b></span><b>' + total + '</b></div>';
+  document.getElementById('cfBody').innerHTML = html;
+  document.getElementById('cf').style.display = 'flex';
+  document.getElementById('cfYes').onclick = function(){ document.getElementById('cf').style.display = 'none'; doSend(date, tr, entries); };
+  document.getElementById('cfNo').onclick = function(){ document.getElementById('cf').style.display = 'none'; };
+}
+
+function doSend(date, tr, entries){
+  var btn = document.getElementById('send');
+  btn.disabled = true; st.className = 'st'; st.textContent = 'Yuborilmoqda...';
+  api('submitReport', { token: localStorage.getItem(TOKEN_KEY), date:date, territory:tr, entries:entries }, function(res){
+    btn.disabled = false;
+    st.className = 'st ok'; st.textContent = '✓ Yuborildi! Rahmat.';
+    pairs.forEach(function(pr, i){ document.getElementById('in' + i).value = ''; });
+    window.scrollTo(0,0);
+  }, function(msg){
+    btn.disabled = false;
+    st.className = 'st err'; st.textContent = msg;
+    if (msg.indexOf('Sessiya') >= 0) {
+      localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY);
+      setTimeout(function(){ location.reload(); }, 1500);
+    }
+  });
+}
+
+// ============ ILK YUKLANISH: TOKEN BORMI TEKSHIRISH ============
+(function init(){
+  var token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return; // auth ekrani ko'rinib turadi
+  document.getElementById('ov').style.display = 'flex';
+  document.getElementById('ov').textContent = 'Tekshirilmoqda...';
+  api('whoAmI', { token: token }, function(res){
+    document.getElementById('ov').style.display = 'none';
+    showMain(res.username);
+  }, function(){
+    localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(NAME_KEY);
+    document.getElementById('ov').style.display = 'none';
+  });
+})();
+</script>
+</body>
+</html>
