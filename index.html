@@ -106,11 +106,9 @@ var TOKEN_KEY = 'kh_token', NAME_KEY = 'kh_username';
 var firms = {}, pairs = [], loaded = 0;
 
 function api(action, payload, ok, fail){
-  fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action: action, payload: payload || {} })
-  })
+  var url = API_URL + '?action=' + encodeURIComponent(action) +
+    '&payload=' + encodeURIComponent(JSON.stringify(payload || {}));
+  fetch(url)
   .then(function(r){ return r.json(); })
   .then(function(res){
     if (res.ok) ok(res);
